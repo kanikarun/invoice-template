@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+
+    /* Color: #c21111 */
+    --primary: 0 84% 41%; /* --primary-700 */
+    --primary-foreground: 210 20% 98%;
+    --primary-50: 0 100% 97%;
+    --primary-100: 0 100% 94%;
+    --primary-200: 0 100% 89%;
+    --primary-300: 0 100% 81%;
+    --primary-400: 0 100% 70%;
+    --primary-500: 0 96% 60%;
+    --primary-600: 0 83% 51%;
+    --primary-700: 0 84% 41%;
+    --primary-800: 0 80% 35%;
+    --primary-900: 0 72% 31%;
+    --primary-950: 0 85% 15%;
+
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --ring: 217.9 10.6% 64.9%;
+
+    --radius: 0.5rem;
+
+    --rpv-core__inner-page-background-color: transparent !important;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+
+    /* Color: #c21111 */
+    --primary: 0 96% 60%; /* --primary-500 */
+    --primary-foreground: 210 20% 98%;
+    --primary-50: 0 100% 97%;
+    --primary-100: 0 100% 94%;
+    --primary-200: 0 100% 89%;
+    --primary-300: 0 100% 81%;
+    --primary-400: 0 100% 70%;
+    --primary-500: 0 96% 60%;
+    --primary-600: 0 83% 51%;
+    --primary-700: 0 84% 41%;
+    --primary-800: 0 80% 35%;
+    --primary-900: 0 72% 31%;
+    --primary-950: 0 85% 15%;
+
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+
+    --ring: 215 27.9% 16.9%;
+  }
+}
+
+* {
+  @apply border-border outline-none;
+}
+body {
+  @apply bg-gray-50 text-foreground antialiased md:subpixel-antialiased dark:bg-gray-900;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove “X” icon from search input field or input type search */
+/* https://medium.com/@rion.mrk/how-to-remove-x-icon-from-search-input-field-or-input-type-search-db3c808405fb */
+
+/* clears the ‘X’ from Internet Explorer */
+input[type='search']::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+input[type='search']::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* clears the ‘X’ from Chrome */
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-results-button,
+input[type='search']::-webkit-search-results-decoration {
+  display: none;
+}
+
+.hash-link::before {
+  padding-left: 8px;
+  content: '#';
+}
+
+/* -------------- */
+/* Classy Theme   */
+/* -------------- */
+
+.bg-classy-gradient {
+  background-image: url('/icons/nnnoise.svg'), linear-gradient(to bottom right, #e4d67e, #c59b37);
+}
+
+.bg-classy-dark-gradient {
+  background-image: linear-gradient(to top right, #1b1300, #7d5000);
+}
+
+#virtuoso-classy::before {
+  @apply absolute top-32 size-full rounded-t-3xl bg-[url('/images/theme-classy-metal-plate.jpg')] bg-repeat px-6 content-[''];
+}
+
+/* -------------- */
+/* Bonsai Theme   */
+/* -------------- */
+
+.bg-bonsai-gradient {
+  @apply bg-[url('/images/theme-bonsai-green-texture.webp')] bg-repeat;
+  background-size: 100% 100%;
+}
+
+.bg-bonsai-rocky {
+  @apply bg-[url('/images/theme-bonsai-rocky1.webp')] bg-repeat;
+  background-size: 100%;
+}
+
+#virtuoso-bonsai::before {
+  @apply absolute top-32 size-full rounded-t-3xl bg-[url('/images/theme-bonsai-rocky1.webp')] bg-contain bg-repeat px-6 content-[''];
+  background-size: 100%;
+}
+
+/* ----------------- */
+/* Kampuchea Theme   */
+/* ----------------- */
+
+#virtuoso-kampuchea::before {
+  @apply absolute top-16 size-full rounded-t-2xl bg-[url('/images/theme-kampuchea-texture.webp')] bg-repeat px-6 content-[''] @3xl:top-1/4 dark:bg-[url('/images/theme-kampuchea-texture-dark.webp')];
+}
+
+div[data-testid='core__inner-pages'] {
+  @apply py-3;
+}

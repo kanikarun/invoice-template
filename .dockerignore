@@ -1,0 +1,13 @@
+# Docker files
+Dockerfile
+.dockerignore
+
+# Node modules
+node_modules
+npm-debug.log
+README.md
+
+# Git & cache
+.git
+.next
+docker
