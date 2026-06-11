@@ -10,7 +10,6 @@ import {
   BoldStripePictureInvoiceDocument,
   DefaultInvoiceDocument,
   FoodieIntlInvoiceDocument,
-  FoodieInvoiceDocument,
   KhmerTaxInvoiceDocument,
   PictureInvoiceDocument,
   Thermal50EnInvoiceDocument,
@@ -40,7 +39,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
   const { invoice, merchant } = data;
   const palette = getColor( '#008cff');
-  const Document = getDocument('foodie');
+  const Document = getDocument('foodie-intl');
   const doc = await new Document({ invoice, merchant, palette, locale }).getDefinition();
   const buffer = await createPdf(doc);
 
@@ -89,8 +88,6 @@ function getDocument(type?: InvoiceType | null) {
       return ThinStripePictureIntlInvoiceDocument;
     case 'foodie-intl':
       return FoodieIntlInvoiceDocument;
-    case 'foodie':
-      return FoodieInvoiceDocument;
     case 'default':
     default:
       return DefaultInvoiceDocument;
