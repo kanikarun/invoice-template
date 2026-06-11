@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import type { Content, ContentColumns, Style, TableCell, TDocumentDefinitions } from 'pdfmake/interfaces';
 
 import { siteConfig } from '@/config/site';
@@ -7,7 +10,7 @@ import { getDate } from '@/utils/dayjs';
 
 import { BaseInvoiceDocument } from './base-invoice-document';
 
-const DEFAULT_HEIGHT = 24;
+const DEFAULT_HEIGHT = 15;
 const DEFAULT_SLICE = 5;
 
 export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
@@ -18,155 +21,82 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
   }
 
   private readonly styles: Record<string, Style> = {
-    the_title: { font: 'Libre', marginTop:20, fontSize:23, alignment: 'right', color: '#960102'},
-    inv_title: { alignment: 'center', marginTop:20, bold: true, fontSize: 15, color:'#960102'},
-    tbl_title: { alignment: 'center', bold: true, color: this.text_color },
+    the_title: { fontSize:15, alignment: 'right', color: this.border_color},
+    inv_title: { fontSize: 15, marginTop:10, bold: true, alignment: 'center', color:this.border_color},
+    tbl_title: { alignment: 'center', bold: true, color: '#e0e0e0',fontSize:7,marginLeft:4 },
     tbl_total: { bold: true, color: this.text_color }
   };
 
   private readonly defaultStyle: Style = {
-    color: '#960102',
-    fontSize: 8,
+    color: this.text_color,
+    fontSize: 6.5,
     font: 'Khmer',
     // font:'Noto',
   };
 
   private header(): Content {
     const { date, invoice_no } = this.data.invoice || {};
-    const image: Content = { width: 45, image: 'LOGO', fit: [60, 60],marginTop: 20 };
-    const merchant: Content = { text: this.merchant_name || '', style: 'the_title' };
+    const image: Content = { width: 45, image: 'LOGO', fit: [50, 50] };
+    const merchant: Content = { text: this.merchant_name || '', style: 'the_title', marginBottom:3};
     const title: Content = { text: 'INVOICE', style: 'inv_title' };
     const header = htmlToPdfmakeText(this.data.merchant.invoice_header);
     const invoiceNo = { text: `Invoice No : ${invoice_no}` };
     const invoiceDate = { text: `Date : ${getDate(date)}` };
-    const svg: Content = {
-      relativePosition: { x: 24 },
-      alignment: 'right',
-      width: 220,
-      svg: `<svg width="534" height="19" viewBox="0 0 534 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 0L0 19H32L38 0H6Z" fill="${this.text_color}"/>
-              <path d="M40 0L34 19H66L72 0H40Z" fill="${this.dark_color}"/>
-              <path d="M74 0L68 19H528L534 0H74Z" fill="#2B2B2B"/>
-            </svg>`
-    };
-
-    const body: TableCell[][] = [];
-    if (this.merchant_invoice_tin) body.push([{ text: 'VATTIN' }, ` : ${this.merchant_invoice_tin}`]);
-    if (this.merchant_telephone) body.push([{ text: 'Phone No' }, ` : ${this.merchant_telephone}`]);
-
-    const tbl_content: Content = [
-      {
-        columns: [
-          {
-            width: '*',
-            layout: {
-              defaultBorder: false,
-              paddingBottom: () => 0,
-              paddingLeft: () => 0,
-              paddingRight: () =>3,
-              paddingTop: () => 0
-            },
-            margin: 0,
-            table: {
-              widths: ['auto', '*'],
-              body
-            }
-          }
-        ]
-      }
-    ];
     const content: Content = [
-      svg,
       {
         columns: [
           image,
           {
-            margin: [50, 0, 0, 0],
-            stack: [
-              merchant,
-              {
-                margin: [0, 5, 0, 0],
-                stack: [header],
-                alignment: 'right'
-              }
-            ]
+            margin: [50, 5, 0, 0],
+            stack: [ { stack: [merchant, header],alignment: 'right' } ]
           }
         ]
       },
-    {
-      columns: [
-        {
-          alignment: 'right',
-          stack: [title, invoiceNo, invoiceDate]  // ← INVOICE + no + date on right
-        }
-      ]
-    },
-
-  ];
-
-    if (this.merchant_invoice_tin || this.merchant_telephone) {
-      content.push(tbl_content);
-    }
-
-    return content;
-  }
-
-  private footer(): Content {
-    return [
       {
-        relativePosition: { x: -20, y: -10 },
-        width: 500,
-        svg: `<svg width="1035" height="72" viewBox="0 0 1035 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M34 26L27 45H593L599 26H34Z" fill="#2B2B2B"/>
-              <path d="M646.163 37L642 49L639.87 56H1029L1035 37H672H646.163Z" fill="#2B2B2B"/>
-              <path d="M613 0L596 49H642L646.163 37L659 0H613Z" fill="${this.text_color}"/>
-              <path d="M642 49H596H7L0 72H635L639.87 56L642 49Z" fill="${this.text_color}"/>
-              <path d="M672 37L659 0L646.163 37H672Z" fill="${this.dark_color}"/>
-            </svg>`
+        columns: [ title ]
+      },
+          {
+        margin: [200, 10, 0, 0],
+        alignment: 'right',
+        stack: [ invoiceNo, invoiceDate ]
       }
-    ];
+  ];
+    return content;
   }
 
   private info_table(): Content {
     const { phone, tin, address } = this.getCustomer();
-    const body: TableCell[][] = [
-      [{ text: 'Bill To', bold: true, fontSize: 7.5, marginBottom: 3 }, ''],
-      [{ text: 'Name' }, { text: textToPdfmakeText(` : ${this.data.invoice?.customer?.fullname || '-'}`) }],
-      [{ text: 'Phone No' }, ` : ${phone}`]
-    ];
-
+    const body: TableCell[][] = [];
+    body.push(
+      [{ text: 'Customer' }, { text: textToPdfmakeText(` : ${this.data.invoice?.customer?.fullname || '-'}`) }],
+      [{ text: 'Phone No', noWrap: true }, ` : ${phone}`]
+    );
     if (tin) body.push([{ text: 'VATTIN' }, ` : ${tin}`]);
     if (address) body.push([{ text: 'Address' }, ` : ${address.replaceAll('\n', ' ')}`]);
-
     const content: Content = [
       {
-        marginTop: 6,
         columns: [
           {
-            width: '*',
             layout: {
               defaultBorder: false,
               paddingBottom: () => 0,
               paddingLeft: () => 0,
-              paddingRight: () => 3,
+              paddingRight: () => 4,
               paddingTop: () => 0
             },
-            margin: 0,
+            marginTop:-19,
             table: {
-              widths: ['auto', '*'],
-              body
+              widths: ['auto', '*'], body
             }
           }
         ]
       }
     ];
-
     return content;
   }
 
   private khqr_table(): Content {
     if (!this.merchant_khqr) return { text: '' };
-
     return {
       margin: 0,
       layout: {
@@ -201,15 +131,14 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
       sub_total
     } = this.data.invoice || {};
 
-    const widths = [15, DEFAULT_HEIGHT, '*', 'auto', 50, 50, 50];
+    const widths = [DEFAULT_HEIGHT, '*', 'auto', 50, 50, 50];
     const header_row: TableCell[] = [
-      { style: 'tbl_title', text: 'No.' },
-      { style: 'tbl_title', text: 'Image' },
-      { style: 'tbl_title', text: 'Item & Description' },
+      { style: 'tbl_title', text: 'Image', marginRight:-10},
+      { style: 'tbl_title', text: 'Item & Description'},
       { style: 'tbl_title', text: 'Qty' },
       { style: 'tbl_title', text: 'Unit Price' },
       { style: 'tbl_title', text: 'Discount' },
-      { style: 'tbl_title', text: 'Amount' }
+      { style: 'tbl_title', text: 'Amount',marginLeft:9 }
     ];
 
     if (this.no_item_discount) {
@@ -231,7 +160,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     const total_rows = [
       this.price_row({ title: total_text, value: total_price, is_img_row: true }),
       this.no_discount_price ? null : this.price_row({ title: discount_text, value: -(discount_price || 0) }),
-      this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price }),
+      this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price,}) ,
       this.no_tax_price ? null : this.price_row({ title: tax_text, value: tax_price }),
       this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }),
       this.no_sub_total ? null : this.price_row({ title: subtotal_text, value: sub_total }),
@@ -242,49 +171,49 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     ].filter(x => x);
 
     const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menus.length)).keys());
-
+    const menuRowCount = (menus?.length || 0) + emptyRows.length;
     return {
-      marginTop: 9,
-      layout: {
-        hLineColor: this.border_color,
-        vLineColor: this.border_color,
-        vLineWidth: () => 0,
-        hLineWidth: () => 0.5,
-        paddingTop: () => 3,
-        paddingBottom: () => 3,
-        fillColor: rowIndex => (!rowIndex ? this.background_color : null)
-      },
-      table: {
-        widths,
-        headerRows: 1,
-        body: [
-          header_row,
+      marginTop:10,
+      stack: [
+        this.getRoundedEdge({ x: 0, y: 0 }, { w: 360, h: 20 }),
+        {
+          marginTop:1,
+          layout: {
+            paddingTop: (i) => (i <= menuRowCount ? 4 : 2),
+            paddingBottom: (i) => (i <= menuRowCount ? 5 : 2), // Keep item rows unchanged, tighten summary rows
+            vLineWidth: () => 0,
+            hLineWidth: (i) =>
+              i <= 1 ? 0 :
+              i <= menuRowCount + 1 || i === menuRowCount + 4 ? 1 : 0,// Draw horizontal lines for menu items and above the totals section.
+            hLineColor: () => this.border_color,
+          },
+          table: {
+            widths,
+            headerRows: 1,
+            body: [
+              header_row,
 
-          ...(menus || []).map((x, i) => {
+          ...(menus || []).map((x) => {
             const { menus_id, unit_price, qty, total_price, discount, discount_type, merchant_uom_id } =
               (x as InvoicesMenus) || {};
             const menu = menus_id as Menus;
-
-            const isLast = i == (menus?.length || 0) - 1;
-            const isRunOutEmpty = emptyRows.length <= 0;
-            const border = [true, false, true, isRunOutEmpty ? isLast : false] as [boolean, boolean, boolean, boolean];
             const name = this.getMenuName(menu);
             const discount_symbol = discount_type === 'percentage' ? '%' : undefined;
             const qty_text = textToPdfmakeText(`${this.qty_format(qty)} ${merchant_uom_id?.name || ''}`.trim());
+            const textCell = { marginTop: 4 };
 
             const row: TableCell[] = [
-              { border, alignment: 'center', text: i + 1 },
               {
-                border,
                 alignment: 'center',
                 image: (menu?.image as DirectusFiles)?.id || 'null',
-                fit: [DEFAULT_HEIGHT, DEFAULT_HEIGHT]
+                fit: [DEFAULT_HEIGHT, DEFAULT_HEIGHT],
+                marginRight:-4
               },
-              { border, text: name },
-              { border, alignment: 'center', text: qty_text },
-              { border, ...this.price_cell(unit_price) },
-              { border, ...this.price_cell(Number(discount), { symbol: discount_symbol }) },
-              { border, ...this.price_cell(total_price) }
+              {  ...textCell, text: name, marginLeft:4},
+              {  ...textCell, alignment: 'center', text: qty_text },
+              {  ...this.price_cell(unit_price) },
+              {  ...this.price_cell(Number(discount), { symbol: discount_symbol }) },
+              {  ...this.price_cell(total_price) ,marginRight:6}
             ];
 
             if (this.no_item_discount) row.splice(DEFAULT_SLICE, 1);
@@ -296,8 +225,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             const isLast = i == (emptyRows?.length || 0) - 1;
             const border = [true, false, true, isLast];
             const row = [
-              { border, text: ' ' },
-              { border, image: siteConfig.Img1pixel, height: DEFAULT_HEIGHT },
+              { border, image: siteConfig.Img1pixel, height: DEFAULT_HEIGHT},
               { border, text: ' ' },
               { border, text: ' ' },
               { border, text: ' ' },
@@ -313,6 +241,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
           ...(total_rows as TableCell[][])
         ]
       }
+    }
+  ]
     } as Content;
   }
 
@@ -321,10 +251,11 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     opt?: { marginTop?: number; symbol?: string; currency?: string }
   ): ContentColumns {
     value = value ?? 0; // Must force zero
-    const { currency, symbol, marginTop = 0 } = opt || {};
+    const { currency, symbol, marginTop = 4} = opt || {};
     const subtractSymbol = value < 0 ? '-' : '';
     return {
       alignment: 'right',
+      marginRight:5,
       columns: [
         {
           text: symbol ?? textToPdfmakeText(`${subtractSymbol}${this.currency.symbol}`),
@@ -333,7 +264,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         },
         {
           text: [this.currency_format(Math.abs(value), currency)],
-          width: 'auto',
+          width: '35',
           marginTop
         }
       ]
@@ -353,7 +284,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
     const img_row: TableCell = is_img_row
       ? {
-          colSpan: 3,
+          colSpan: 2,
           rowSpan: 1 + r1 + r2 + r3 + r4 + r5 + r6 + 1, // total + discount + delivery + tax + sub total + exchange rate + deposit + empty row
           border,
           layout: {
@@ -380,61 +311,89 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         }
       : { colSpan: 2, text: '' };
 
-    const text_cell: TableCell = is_empty ? { border, text: '' } : { style: 'tbl_total', text: title || '' };
+    const text_cell: TableCell = is_empty ? { border, text: '' } : { style: 'tbl_total', text: title || ''};
     const price_cell: TableCell = is_empty ? { border, text: '' } : [this.price_cell(value, { currency, symbol })];
 
     if (this.no_item_discount) {
       return [
-        img_row, // 1. No
-        '', // 2. Image
-        '', // 3. Name
-        { colSpan: 2, ...text_cell, fillColor: !is_empty ? this.background_color : undefined }, // 4. Qty
-        '', // 5. Unit price
-        price_cell // 6. Amount
+        img_row, // 1. Image
+        '', // 2. Name
+        { colSpan: 2, ...text_cell,marginTop:2 }, // 3. Qty
+        '', // 4. Unit price
+        price_cell, // 5. Amount
       ];
     }
 
     return [
-      img_row, // 1. No
-      '', // 2. Image
-      '', // 3. Name
-      { colSpan: 3, ...text_cell, fillColor: !is_empty ? this.background_color : undefined }, // 4. Qty
-      '', // 5. Unit price
-      '', // 6. Discount
-      price_cell // 7. Amount
+      img_row, // 1. Image
+      '', // 2. Name
+      { colSpan: 3, ...text_cell,marginTop:2 }, // 3. Qty
+      '', // 4. Unit price
+      '', // 5. Discount
+      price_cell // 6. Amount
     ];
   }
 
-  private signature_table(): Content {
-    if (!this.show_signature) return [];
-    return {
-      layout: 'noBorders',
-      table: {
-        widths: ['*', '*'],
-        heights: ['auto', 'auto', 'auto'],
-        body: [
-          ['', { alignment: 'center', image: 'SIGNATURE', fit: ['auto', 35] }],
-          [
-            {
-              alignment: 'center',
-              canvas: [{ type: 'line', lineColor: 'black', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.5 }]
-            },
-            {
-              alignment: 'center',
-              canvas: [{ type: 'line', lineColor: 'black', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 0.5 }]
-            }
-          ],
-          [
-            { alignment: 'center', stack: ["Customer's Signature & Name"] },
-            { alignment: 'center', stack: ["Seller's Signature & Name"] }
-          ]
-        ]
-      }
-    } as Content;
-  }
+    private signature_table(): Content {
+      if (!this.show_signature) return [];
 
+      return {
+        marginTop: -10,
+        layout: 'noBorders',
+        table: {
+          widths: ['*', 'auto'], // push signatures to the right
+          body: [
+            [
+              '',
+              {
+                layout: 'noBorders',
+                table: {
+                  widths: [85, 10,80], // customer, gap, seller
+                  body: [
+                    [
+                      { text: '' },
+                      '',
+                      { image: 'SIGNATURE', fit: [70, 25], alignment: 'center' }
+                    ],
+                    [
+                      {
+                        canvas: [{ type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 80, y2: 0, lineWidth: 1 }]
+                      },
+                      '',
+                      {
+                        canvas: [{ type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 80, y2: 0, lineWidth: 1 }]
+                      }
+                    ],
+                    [
+                      { text: "Customer",marginLeft:-5, alignment: 'center', fontSize: 6 },'', { text: "Seller", alignment: 'center', fontSize: 6}
+                    ]
+                  ]
+                }
+              }
+            ]
+          ]
+        }
+      } as Content;
+    }
+  //SVG pattern
   async getDefinition(): Promise<TDocumentDefinitions> {
+
+    let patternSvg = readFileSync(
+      path.join(process.cwd(), 'public', 'foodie.svg'),
+      'utf8'
+    );
+
+    patternSvg = patternSvg      //color SVG pattern
+      .replace(/#bf1304/gi, this.dark_color)
+      .replace(/#d95204/gi, this.border_color)
+      .replace(/#f26849/gi, this.text_color);
     const contents: Content = [
+      {
+        svg: patternSvg,
+        fit: [420, 595],
+        opacity: 0,
+        absolutePosition: { x:0, y: 0 }
+      },
       {
         layout: 'noBorders',
         table: {
@@ -443,8 +402,6 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         }
       }
     ];
-
-
 
     const [LOGO, KHQR, SIGNATURE] = await Promise.all([
       getImageBase64(this.merchant_logo),
@@ -462,16 +419,31 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         return { [imageObj.id]: image };
       })
     );
+    //Paper BG
+    const PAPER_BG = readFileSync(
+      path.join(process.cwd(), 'public', 'paper-bg.png')
+    ).toString('base64');
 
     return {
       content: contents,
       defaultStyle: this.defaultStyle,
-      images: { LOGO, KHQR, SIGNATURE, ...Object.assign({}, ...images) },
-      pageMargins: [20, 20, 20, 35],
+      images: {
+        LOGO,
+        KHQR,
+        SIGNATURE,
+        PAPER_BG: `data:image/png;base64,${PAPER_BG}`,
+        PATTERN: `data:image/svg;base64,${patternSvg}`,
+        ...Object.assign({}, ...images)
+      },
+
+      background: {
+        image: 'PAPER_BG',
+        fit: [420, 595],
+      },
+      pageMargins: [30, 35, 30, 35],
       pageOrientation: 'portrait',
       pageSize: 'A5',
-      styles: this.styles,
-      footer: () => this.footer()
+      styles: this.styles
     };
   }
 }
