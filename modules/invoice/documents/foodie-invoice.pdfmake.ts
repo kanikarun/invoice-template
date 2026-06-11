@@ -69,9 +69,9 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     const body: TableCell[][] = [];
     body.push(
       [{ text: 'អតិថិជន / Customer' }, { text: textToPdfmakeText(` : ${this.data.invoice?.customer?.fullname || '-'}`) }],
-      [{ text: 'លេខទូរស័ព្ទ / Phone No', noWrap: true }, ` : ${phone}`]
+      [{ text: 'លេខទូរស័ព្ទ / Phone No'}, ` : ${phone}`]
     );
-    if (tin) body.push([{ text: 'លេខអត្តសញ្ញាណកម្ម / VATTIN' }, ` : ${tin}`]);
+    if (tin) body.push([{ text: 'លេខអត្តសញ្ញាណកម្ម / VATTIN', noWrap:true}, ` : ${tin}`]);
     if (address) body.push([{ text: 'អាស័យដ្ឋាន | Address' }, ` : ${address.replaceAll('\n', ' ')}`]);
     const content: Content = [
       {
