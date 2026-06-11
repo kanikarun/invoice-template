@@ -4,6 +4,7 @@ export * from './bold-stripe-invoice.pdfmake';
 export * from './bold-stripe-picture-intl-invoice.pdfmake';
 export * from './bold-stripe-picture-invoice.pdfmake';
 export * from './default-invoice.pdfmake';
+export * from './foodie-invoice.pdfmake'
 export * from './invoice-report.pdfmake';
 export * from './khmer-tax-invoice.pdfmake';
 export * from './picture-invoice.pdfmake';

@@ -9,6 +9,7 @@ import {
   BoldStripePictureIntlInvoiceDocument,
   BoldStripePictureInvoiceDocument,
   DefaultInvoiceDocument,
+  FoodieInvoiceDocument,
   KhmerTaxInvoiceDocument,
   PictureInvoiceDocument,
   Thermal50EnInvoiceDocument,
@@ -18,7 +19,7 @@ import {
   ThinStripeIntlInvoiceDocument,
   ThinStripeInvoiceDocument,
   ThinStripePictureIntlInvoiceDocument,
-  ThinStripePictureInvoiceDocument
+  ThinStripePictureInvoiceDocument,
 } from '@/modules/invoice/documents';
 import { InvoiceType } from '@/modules/invoice/hooks/use-invoice';
 import { decode_invoice } from '@/utils/short-uuid';
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
   const { invoice, merchant } = data;
   const palette = getColor(color || merchant.color);
-  const Document = getDocument('bold-stripe-intl');
+  const Document = getDocument('foodie');
   const doc = await new Document({ invoice, merchant, palette, locale }).getDefinition();
   const buffer = await createPdf(doc);
 
@@ -86,6 +87,8 @@ function getDocument(type?: InvoiceType | null) {
       return ThinStripePictureInvoiceDocument;
     case 'thin-stripe-picture-intl':
       return ThinStripePictureIntlInvoiceDocument;
+    case 'foodie':
+      return FoodieInvoiceDocument;
     case 'default':
     default:
       return DefaultInvoiceDocument;

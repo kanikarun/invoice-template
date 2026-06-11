@@ -1,4 +1,5 @@
 import { currencies as _currencies, Currency } from 'currencies.json';
+import type { CanvasRect, Content, Position } from 'pdfmake/interfaces';
 
 import { siteConfig } from '@/config/site';
 import type { PaletteColor } from '@/lib/color';
@@ -167,6 +168,23 @@ export class BaseInvoiceDocument {
   protected getImageUrl(file: DirectusFiles) {
     return getDirectusImage(file, { width: 128, height: 128, quality: 50, size: 'xs' }) || siteConfig.Img1pixel;
   }
+
+  protected getRoundedEdge(position: Position, canvas: Pick<CanvasRect, 'color' | 'w' | 'h'> ): Content {
+    return {
+      relativePosition: position,
+      canvas: [{
+        type: 'rect',
+        x: 0,
+        y: 0,
+        r: 20,
+        // lineColor: 'black',
+        color: this.border_color,
+        ...canvas,
+      }]
+    }
+  }
+
+
 }
 
 export class BaseInvoiceReportDocument {
