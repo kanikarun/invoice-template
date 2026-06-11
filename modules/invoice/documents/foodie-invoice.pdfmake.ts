@@ -375,18 +375,18 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
         }
       } as Content;
     }
-  //SVG pattern
+
   async getDefinition(): Promise<TDocumentDefinitions> {
 
-    let patternSvg = readFileSync(
+    let patternSvg = readFileSync( // Import SVG pattern
       path.join(process.cwd(), 'public', 'foodie.svg'),
       'utf8'
     );
 
-    patternSvg = patternSvg      //color SVG pattern
-      .replace(/#bf1304/gi, this.dark_color)
-      .replace(/#d95204/gi, this.border_color)
-      .replace(/#f26849/gi, this.text_color);
+    patternSvg = patternSvg       //change SVG pattern path colors
+    .replace(/#bf1304/gi, this.dark_color)
+    .replace(/#d95204/gi, this.border_color)
+    .replace(/#f26849/gi, this.text_color);
     const contents: Content = [
       {
         svg: patternSvg,
