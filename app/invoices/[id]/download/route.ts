@@ -10,6 +10,7 @@ import {
   BoldStripePictureInvoiceDocument,
   DefaultInvoiceDocument,
   FoodieIntlInvoiceDocument,
+  FoodieInvoiceDocument,
   KhmerTaxInvoiceDocument,
   PictureInvoiceDocument,
   Thermal50EnInvoiceDocument,
@@ -88,6 +89,8 @@ function getDocument(type?: InvoiceType | null) {
       return ThinStripePictureIntlInvoiceDocument;
     case 'foodie-intl':
       return FoodieIntlInvoiceDocument;
+    case 'foodie':
+      return FoodieInvoiceDocument;
     case 'default':
     default:
       return DefaultInvoiceDocument;
