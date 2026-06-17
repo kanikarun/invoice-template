@@ -27,6 +27,10 @@ const NotoSansSCRegular = getFont('NotoSansSC/NotoSansSC-Regular.ttf');
 const NotoSansSCBold = getFont('NotoSansSC/NotoSansSC-SemiBold.ttf');
 const NotoSansThaiRegular = getFont('NotoSansThai/NotoSansThai-Regular.ttf');
 const NotoSansThaiBold = getFont('NotoSansThai/NotoSansThai-SemiBold.ttf');
+const LibreRegular = getFont('LibreBaskerville/LibreBaskerville-Regular.ttf');
+const LibreItalic = getFont('LibreBaskerville/LibreBaskerville-Italic.ttf');
+const LibreBold = getFont('LibreBaskerville/LibreBaskerville-Bold.ttf');
+const LibreBoldItalic = getFont('LibreBaskerville/LibreBaskerville-BoldItalic.ttf');
 
 const fonts = {
   Khmer: {
@@ -76,6 +80,12 @@ const fonts = {
     bold: NotoSansThaiBold,
     italics: NotoSansThaiRegular,
     bolditalics: NotoSansThaiBold
+  },
+  Libre: {
+    normal: LibreRegular,
+    bold: LibreBold,
+    italics: LibreItalic,
+    bolditalics: LibreBoldItalic
   }
 };
 

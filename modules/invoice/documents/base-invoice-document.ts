@@ -1,4 +1,5 @@
 import { currencies as _currencies, Currency } from 'currencies.json';
+import type { CanvasRect, Content, Position } from 'pdfmake/interfaces';
 
 import { siteConfig } from '@/config/site';
 import type { PaletteColor } from '@/lib/color';
@@ -10,7 +11,7 @@ import type {
   InvoicesMenus,
   Menus,
   Merchants,
-  MerchantsTranslations
+  MerchantsTranslations,
 } from '@/types/directus';
 import { getDirectusImage } from '@/utils/image';
 import { getTranslation } from '@/utils/translation';
@@ -167,7 +168,25 @@ export class BaseInvoiceDocument {
   protected getImageUrl(file: DirectusFiles) {
     return getDirectusImage(file, { width: 128, height: 128, quality: 50, size: 'xs' }) || siteConfig.Img1pixel;
   }
+
+   protected getRoundedEdge(position: Position, canvas: Pick<CanvasRect, 'color' | 'w' | 'h'> ): Content {
+    return {
+      relativePosition: position,
+      canvas: [{
+        type: 'rect',
+        x: 0,
+        y: 0,
+        r: 20,
+        // lineColor: 'black',
+        color: this.background_color,
+        ...canvas,
+      }]
+    }
+  }
+
+
 }
+
 
 export class BaseInvoiceReportDocument {
   constructor(protected merchant: Merchants) {}
