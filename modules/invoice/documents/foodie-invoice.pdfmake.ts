@@ -1,3 +1,5 @@
+
+
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -30,7 +32,6 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     color: this.text_color,
     fontSize: 6.5,
     font: 'Khmer',
-    // font:'Noto',
   };
 
   private header(): Content {
@@ -58,9 +59,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
       {
         columns: [ title ]
       },
-          {
-        margin: [200, 10, 0, 0],
-        alignment: 'right',
+      { margin: [200, 10, 0, 0], alignment: 'right',
         stack: [ invoiceNo, invoiceDate ]
       }
   ];
@@ -88,9 +87,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
               paddingTop: () => 0
             },
             marginTop:-19,
-            table: {
-              widths: ['auto', '*'], body
-            }
+            table: { widths: ['auto', '*'], body }
           }
         ]
       }
@@ -110,10 +107,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
         paddingLeft: () => 0,
         paddingRight: () => 0
       },
-      table: {
-        widths: ['auto'],
-        body: [[{ image: 'KHQR', alignment: 'center', fit: [200, 70] }]]
-      }
+      table: { widths: ['auto'], body: [[{ image: 'KHQR', alignment: 'center', fit: [200, 70] }]] }
     };
   }
 
@@ -136,11 +130,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
 
     const widths = [DEFAULT_HEIGHT, '*', 'auto', 60, 60, 60];
     const header_row: TableCell[] = [
-      {
-        stack: [
-          this.getRoundedEdge({ x: -8, y:-5 }, {color: this.border_color,w: 365, h: 28 }),
-        ],
-      },
+      { stack: [ this.getRoundedEdge({ x: -8, y:-5 }, {color: this.border_color,w: 365, h: 28 }),],},
       { style: 'tbl_title', text: 'ឈ្មោះ និងបរិយាយទំនិញ\nItem & Description', alignment: 'left', marginLeft: -20 },
       { style: 'tbl_title', text: 'ចំនួន\nQty' },
       { style: 'tbl_title', text: 'តម្លៃ\nUnit Price' },
@@ -169,14 +159,13 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
       this.no_discount_price ? null : this.price_row({ title: discount_text, value: -(discount_price || 0) }),
       this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price }),
       this.no_tax_price ? null : this.price_row({ title: tax_text, value: tax_price }),
-      this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }),
-      subTotal_text,
-      this.no_exchange_rate ? null : this.price_row({ title: `សរុបរួមរៀល / In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
+      this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }), subTotal_text,
+      this.no_exchange_rate
+      ? null
+      : this.price_row({ title: `សរុបរួមរៀល / In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
       this.price_row({ is_empty: true })
     ].filter(x => x);
 
-    // const renderedMenus = [...(menus || []),...(menus || []),...(menus || []),...(menus || [])]; //test add menu or slice
-    // const menuLen = renderedMenus.length;
     const menuLen = (menus || []).length;
     const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menuLen)).keys());
     const subTotalLine = subTotal_text ? menuLen + emptyRows.length + 1 + total_rows.indexOf(subTotal_text) : -1;
@@ -189,13 +178,12 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
             paddingBottom: (i) => (i <= menuLen ? 5 : 2),
             vLineWidth: () => 0,
             hLineWidth: (i) => {
-              if (i <= 1) return 0;                      // no border on header
-              if (i <= menuLen + 1) return 0.5;       // dividers between items + below last item
+              if (i <= 1) return 0; // no border on header
+              if (i <= menuLen + 1) return 0.5; // dividers between items + below last item
               if (i === subTotalLine) return 0.5; // above Balance Due / In Riel
               return 0;
             },
             hLineColor: () => this.border_color,
-            // fillColor: (i) => (i === 0 ? this.border_color : null),
           },
           table: {
             widths,
@@ -205,7 +193,6 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
               header_row,
 
            ...(menus || []).map((x) => {
-            // ...renderedMenus.map((x) => {
             const { menus_id, unit_price, qty, total_price, discount, discount_type, merchant_uom_id } =
               (x as InvoicesMenus) || {};
             const menu = menus_id as Menus;
@@ -257,7 +244,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     opt?: { marginTop?: number; symbol?: string; currency?: string }
   ): ContentColumns {
     value = value ?? 0; // Must force zero
-    const { currency, symbol, marginTop = 0} = opt || {};
+    const { currency, symbol, marginTop = 0 } = opt || {};
     const subtractSymbol = value < 0 ? '-' : '';
     return {
       alignment: 'right',
@@ -269,11 +256,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
           marginTop: marginTop - 0.5,
           marginRight: 1
         },
-        {
-          text: [this.currency_format(Math.abs(value), currency)],
-          width: '40',
-          marginTop
-        }
+        { text: [this.currency_format(Math.abs(value), currency)], width: '40', marginTop }
       ]
     };
   }
@@ -344,7 +327,6 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
 
  private signature_table(): Content {
       if (!this.show_signature) return [];
-
       return {
         marginTop: -10,
         layout: 'noBorders',
@@ -394,15 +376,16 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
           ]
         }
       } as Content;
-    }  //SVG pattern
+    }
   async getDefinition(): Promise<TDocumentDefinitions> {
 
+    //SVG pattern
     let patternSvg = readFileSync(
       path.join(process.cwd(), 'public', 'foodie.svg'),
       'utf8'
     );
 
-    patternSvg = patternSvg      //color SVG pattern
+    patternSvg = patternSvg //color SVG pattern
       .replace(/#bf1304/gi, this.dark_color)
       .replace(/#d95204/gi, this.border_color)
       .replace(/#f26849/gi, this.text_color);
@@ -432,6 +415,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
         return { [imageObj.id]: image };
       })
     );
+
     //Paper BG
     const PAPER_BG = readFileSync(
       path.join(process.cwd(), 'public', 'paper-bg.png')
@@ -440,14 +424,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     return {
       content: contents,
       defaultStyle: this.defaultStyle,
-      images: {
-        LOGO,
-        KHQR,
-        SIGNATURE,
-        PAPER_BG: `data:image/png;base64,${PAPER_BG}`,
-        PATTERN: `data:image/svg;base64,${patternSvg}`,
-        ...Object.assign({}, ...images)
-      },
+      images: { LOGO, KHQR, SIGNATURE, PAPER_BG: `data:image/png;base64,${PAPER_BG}`, PATTERN: `data:image/svg;base64,${patternSvg}`, ...Object.assign({}, ...images) },
 
       background: () => ([
         { image: 'PAPER_BG', fit: [420, 595] },
