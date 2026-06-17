@@ -11,7 +11,6 @@ import { getDate } from '@/utils/dayjs';
 import { BaseInvoiceDocument } from './base-invoice-document';
 
 const DEFAULT_HEIGHT = 15;
-const DEFAULT_SLICE = 5;
 
 export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
   private get BASE_EMPTY_ROWS() {
@@ -22,7 +21,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
   private readonly styles: Record<string, Style> = {
     the_title: { fontSize:15, alignment: 'right', color: this.border_color},
-    inv_title: { fontSize: 15, marginTop:10, bold: true, alignment: 'center', color:this.border_color},
+    inv_title: { fontSize: 15,marginTop:-6, bold: true, alignment: 'center', color:this.border_color},
     tbl_title: { alignment: 'center', bold: true, color: '#e0e0e0',fontSize:7,marginLeft:4 },
     tbl_total: { bold: true, color: this.text_color }
   };
@@ -42,13 +41,17 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     const header = htmlToPdfmakeText(this.data.merchant.invoice_header);
     const invoiceNo = { text: `Invoice No : ${invoice_no}` };
     const invoiceDate = { text: `Date : ${getDate(date)}` };
+    const merchantStack: Content[] = [merchant,header];
+    if (this.merchant_invoice_tin) merchantStack.push({ text: `VATTIN : ${this.merchant_invoice_tin}`, marginTop: 3 });
+    if (this.merchant_telephone) merchantStack.push({ text: `Phone No : ${this.merchant_telephone}` });
+
     const content: Content = [
       {
+        columnGap: 50,
         columns: [
           image,
           {
-            margin: [50, 5, 0, 0],
-            stack: [ { stack: [merchant, header],alignment: 'right' } ]
+            stack: [ { stack: merchantStack, alignment: 'right' } ]
           }
         ]
       },
@@ -69,8 +72,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     const body: TableCell[][] = [];
     body.push(
       [{ text: 'Customer' }, { text: textToPdfmakeText(` : ${this.data.invoice?.customer?.fullname || '-'}`) }],
-      [{ text: 'Phone No', noWrap: true }, ` : ${phone}`]
     );
+    if (phone && phone !== '-') body.push([{ text: 'Phone No' ,noWrap: true }, ` : ${phone}`]);
     if (tin) body.push([{ text: 'VATTIN' }, ` : ${tin}`]);
     if (address) body.push([{ text: 'Address' }, ` : ${address.replaceAll('\n', ' ')}`]);
     const content: Content = [
@@ -133,17 +136,22 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
     const widths = [DEFAULT_HEIGHT, '*', 'auto', 50, 50, 50];
     const header_row: TableCell[] = [
-      { style: 'tbl_title', text: 'Image', marginRight:-10},
-      { style: 'tbl_title', text: 'Item & Description'},
+      {
+        stack: [
+          this.getRoundedEdge({ x: -8, y:-5 }, {color: this.border_color,w: 365, h: 20 }),
+        ],
+      },
+      { style: 'tbl_title', text: 'Item & Description', alignment: 'left', marginLeft: -20 },
       { style: 'tbl_title', text: 'Qty' },
       { style: 'tbl_title', text: 'Unit Price' },
       { style: 'tbl_title', text: 'Discount' },
-      { style: 'tbl_title', text: 'Amount',marginLeft:9 }
+      { style: 'tbl_title', text: 'Amount' , marginLeft:11}
+
     ];
 
     if (this.no_item_discount) {
-      widths.splice(DEFAULT_SLICE, 1);
-      header_row.splice(DEFAULT_SLICE, 1);
+      widths.splice(4, 1);
+      header_row.splice(4, 1);
     }
 
     const total_text = 'Total Price';
@@ -153,70 +161,69 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     const deposit_text = `Deposit ${_deposit}`;
     const delivery_text = 'Delivery Fee';
     const tax_text = `VAT (${Number(tax_percentage)}%)`;
-    const subtotal_text = this.no_deposit_price ? 'Sub Total' : 'Balance Due';
-    const exchange_rate_text = `In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`;
     const sub_total_in_riel = Number(sub_total) * Number(exchange_rate);
+    const subTotal_text = this.no_sub_total ? null : this.price_row({ title: this.no_deposit_price ? 'Sub Total' : 'Balance Due', value: sub_total, border_top: true });
 
     const total_rows = [
       this.price_row({ title: total_text, value: total_price, is_img_row: true }),
       this.no_discount_price ? null : this.price_row({ title: discount_text, value: -(discount_price || 0) }),
-      this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price,}) ,
+      this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price }),
       this.no_tax_price ? null : this.price_row({ title: tax_text, value: tax_price }),
       this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }),
-      this.no_sub_total ? null : this.price_row({ title: subtotal_text, value: sub_total }),
-      this.no_exchange_rate
-        ? null
-        : this.price_row({ title: exchange_rate_text, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
+      subTotal_text,
+      this.no_exchange_rate ? null : this.price_row({ title: `In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
       this.price_row({ is_empty: true })
     ].filter(x => x);
 
-    const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menus.length)).keys());
-    const menuRowCount = (menus?.length || 0) + emptyRows.length;
+    // const renderedMenus = [...(menus || []),...(menus || []),...(menus || []),...(menus || [])]; //test add menu or slice
+    // const menuLen = renderedMenus.length;
+    const menuLen = (menus || []).length;
+    const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menuLen)).keys());
+
+    const subTotalLine = subTotal_text ? menuLen + emptyRows.length + 1 + total_rows.indexOf(subTotal_text) : -1;
     return {
-      marginTop:10,
       stack: [
-        this.getRoundedEdge({ x: 0, y: 0 }, { w: 360, h: 20 }),
         {
-          marginTop:1,
+          marginTop:12,
           layout: {
-            paddingTop: (i) => (i <= menuRowCount ? 4 : 2),
-            paddingBottom: (i) => (i <= menuRowCount ? 5 : 2), // Keep item rows unchanged, tighten summary rows
+            paddingTop: (i) => (i <= menuLen ? 5 : 1),
+            paddingBottom: (i) => (i <= menuLen ? 5 : 2),
             vLineWidth: () => 0,
-            hLineWidth: (i) =>
-              i <= 1 ? 0 :
-              i <= menuRowCount + 1 || i === menuRowCount + 4 ? 1 : 0,// Draw horizontal lines for menu items and above the totals section.
+            hLineWidth: (i) => {
+              if (i <= 1) return 0;                      // no border on header
+              if (i <= menuLen + 1) return 1;       // dividers between items + below last item
+              if (i === subTotalLine) return 1; // above Balance Due / In Riel
+              return 0;
+            },
             hLineColor: () => this.border_color,
+            // fillColor: (i) => (i === 0 ? this.border_color : null),
           },
           table: {
             widths,
             headerRows: 1,
+            dontBreakRows: true,
             body: [
               header_row,
 
-          ...(menus || []).map((x) => {
+           ...(menus || []).map((x) => {
+            // ...renderedMenus.map((x) => {
             const { menus_id, unit_price, qty, total_price, discount, discount_type, merchant_uom_id } =
               (x as InvoicesMenus) || {};
             const menu = menus_id as Menus;
             const name = this.getMenuName(menu);
             const discount_symbol = discount_type === 'percentage' ? '%' : undefined;
             const qty_text = textToPdfmakeText(`${this.qty_format(qty)} ${merchant_uom_id?.name || ''}`.trim());
-            const textCell = { marginTop: 4 };
 
             const row: TableCell[] = [
-              {
-                alignment: 'center',
-                image: (menu?.image as DirectusFiles)?.id || 'null',
-                fit: [DEFAULT_HEIGHT, DEFAULT_HEIGHT],
-                marginRight:-4
-              },
-              {  ...textCell, text: name, marginLeft:4},
-              {  ...textCell, alignment: 'center', text: qty_text },
-              {  ...this.price_cell(unit_price) },
-              {  ...this.price_cell(Number(discount), { symbol: discount_symbol }) },
-              {  ...this.price_cell(total_price) ,marginRight:6}
+              { alignment: 'center', image: (menu?.image as DirectusFiles)?.id || 'null', fit: [DEFAULT_HEIGHT, DEFAULT_HEIGHT], marginRight:-4 },
+              { bold:true, text: name, marginLeft:4},
+              { alignment: 'center', text: qty_text },
+              { ...this.price_cell(unit_price) },
+              { ...this.price_cell(Number(discount), { symbol: discount_symbol }) },
+              { ...this.price_cell(total_price), marginRight:6 }
             ];
 
-            if (this.no_item_discount) row.splice(DEFAULT_SLICE, 1);
+            if (this.no_item_discount) row.splice(4, 1);
 
             return row;
           }),
@@ -233,10 +240,10 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
               { border, text: ' ' }
             ];
 
-            if (this.no_item_discount) row.splice(DEFAULT_SLICE, 1);
+            if (this.no_item_discount) row.splice(4, 1);
 
             return row;
-          }),
+            }),
 
           ...(total_rows as TableCell[][])
         ]
@@ -251,11 +258,12 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     opt?: { marginTop?: number; symbol?: string; currency?: string }
   ): ContentColumns {
     value = value ?? 0; // Must force zero
-    const { currency, symbol, marginTop = 4} = opt || {};
+    const { currency, symbol, marginTop = 0} = opt || {};
     const subtractSymbol = value < 0 ? '-' : '';
     return {
       alignment: 'right',
       marginRight:5,
+      bold:true,
       columns: [
         {
           text: symbol ?? textToPdfmakeText(`${subtractSymbol}${this.currency.symbol}`),
@@ -272,8 +280,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
   }
 
   private price_row(opt: PriceRow): TableCell[] {
-    const { title, value, is_img_row, is_empty, currency, symbol } = opt;
-    const border = [false, false, false, false] as [boolean, boolean, boolean, boolean];
+    const { title, value, is_img_row, is_empty, currency, symbol, border_top} = opt;
+    const border = [false, !!border_top, false, false] as [boolean, boolean, boolean, boolean];
 
     const r1 = this.no_discount_price ? 0 : 1;
     const r2 = this.no_delivery_price ? 0 : 1;
@@ -284,6 +292,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
     const img_row: TableCell = is_img_row
       ? {
+          marginTop:2,
           colSpan: 2,
           rowSpan: 1 + r1 + r2 + r3 + r4 + r5 + r6 + 1, // total + discount + delivery + tax + sub total + exchange rate + deposit + empty row
           border,
@@ -300,9 +309,9 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             body: [
               [
                 [
-                  { stack: htmlToPdfmakeText(this.data.invoice.note), marginBottom: 4 },
-                  { stack: htmlToPdfmakeText(this.data.merchant.invoice_note), marginBottom: 4 },
-                  { stack: htmlToPdfmakeText(this.data.merchant.payment_note), marginBottom: 4 },
+                  { stack: htmlToPdfmakeText(this.data.invoice.note) },
+                  { stack: htmlToPdfmakeText(this.data.merchant.invoice_note) },
+                  { stack: htmlToPdfmakeText(this.data.merchant.payment_note) },
                   this.khqr_table()
                 ]
               ]
@@ -311,8 +320,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         }
       : { colSpan: 2, text: '' };
 
-    const text_cell: TableCell = is_empty ? { border, text: '' } : { style: 'tbl_total', text: title || ''};
-    const price_cell: TableCell = is_empty ? { border, text: '' } : [this.price_cell(value, { currency, symbol })];
+    const text_cell: TableCell = is_empty ? { border, text: '' } : { border, style: 'tbl_total', text: title || ''};
+    const price_cell: TableCell = is_empty ? { border, text: '' } : { border, ...this.price_cell(value, { currency, symbol, marginTop: 2 })};
 
     if (this.no_item_discount) {
       return [
@@ -334,7 +343,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     ];
   }
 
-    private signature_table(): Content {
+ private signature_table(): Content {
       if (!this.show_signature) return [];
 
       return {
@@ -348,24 +357,36 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
               {
                 layout: 'noBorders',
                 table: {
-                  widths: [85, 10,80], // customer, gap, seller
+                  widths: [100, 10, 100], // customer, gap, seller
                   body: [
-                    [
-                      { text: '' },
-                      '',
-                      { image: 'SIGNATURE', fit: [70, 25], alignment: 'center' }
-                    ],
+                    [{ text: '' }, '', { image: 'SIGNATURE', fit: ['auto',50], alignment: 'center' }],
                     [
                       {
-                        canvas: [{ type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 80, y2: 0, lineWidth: 1 }]
+                        canvas: [
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                        ]
                       },
                       '',
                       {
-                        canvas: [{ type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 80, y2: 0, lineWidth: 1 }]
+                        canvas: [
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                        ]
                       }
                     ],
                     [
-                      { text: "Customer",marginLeft:-5, alignment: 'center', fontSize: 6 },'', { text: "Seller", alignment: 'center', fontSize: 6}
+                      {
+                        stack: [
+                          { text: 'Customer', alignment: 'center', fontSize: 6 },
+                          { text: this.data.invoice?.customer?.fullname || '', alignment: 'center', fontSize: 6, bold: true}
+                        ]
+                      }
+                      ,'',
+                      {
+                        stack: [
+                          { text: 'Seller', alignment: 'center', fontSize: 6 },
+                          { text: this.merchant_name || '', alignment: 'center', fontSize: 6, bold: true }
+                        ]
+                      }
                     ]
                   ]
                 }
@@ -374,8 +395,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
           ]
         }
       } as Content;
-    }
-  //SVG pattern
+    }  //SVG pattern
   async getDefinition(): Promise<TDocumentDefinitions> {
 
     let patternSvg = readFileSync(
@@ -388,12 +408,6 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
       .replace(/#d95204/gi, this.border_color)
       .replace(/#f26849/gi, this.text_color);
     const contents: Content = [
-      {
-        svg: patternSvg,
-        fit: [420, 595],
-        opacity: 0,
-        absolutePosition: { x:0, y: 0 }
-      },
       {
         layout: 'noBorders',
         table: {
@@ -436,11 +450,11 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         ...Object.assign({}, ...images)
       },
 
-      background: {
-        image: 'PAPER_BG',
-        fit: [420, 595],
-      },
-      pageMargins: [30, 35, 30, 35],
+      background: () => ([
+        { image: 'PAPER_BG', fit: [420, 595] },
+        { svg: patternSvg, fit: [420, 595], opacity: 0, absolutePosition: { x: 0, y: 0 } }
+      ]),
+      pageMargins: [30, 20, 30, 20],
       pageOrientation: 'portrait',
       pageSize: 'A5',
       styles: this.styles
@@ -455,4 +469,5 @@ interface PriceRow {
   symbol?: string;
   is_img_row?: boolean;
   is_empty?: boolean;
+  border_top?: boolean;
 }

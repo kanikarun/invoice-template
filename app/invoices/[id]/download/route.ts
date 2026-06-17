@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   if (!data) return NextResponse.json({ error: 'Invoice not found' }, { status: 400 });
 
   const { invoice, merchant } = data;
-  const palette = getColor( '#008cff');
+  const palette = getColor(color || merchant.color);
   const Document = getDocument('foodie-intl');
   const doc = await new Document({ invoice, merchant, palette, locale }).getDefinition();
   const buffer = await createPdf(doc);

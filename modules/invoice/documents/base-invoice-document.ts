@@ -169,7 +169,7 @@ export class BaseInvoiceDocument {
     return getDirectusImage(file, { width: 128, height: 128, quality: 50, size: 'xs' }) || siteConfig.Img1pixel;
   }
 
-  protected getRoundedEdge(position: Position, canvas: Pick<CanvasRect, 'w' | 'h'>): Content {
+   protected getRoundedEdge(position: Position, canvas: Pick<CanvasRect, 'color' | 'w' | 'h'> ): Content {
     return {
       relativePosition: position,
       canvas: [{
@@ -177,10 +177,11 @@ export class BaseInvoiceDocument {
         x: 0,
         y: 0,
         r: 20,
-        color: this.border_color,
-        ...canvas
+        // lineColor: 'black',
+        color: this.background_color,
+        ...canvas,
       }]
-    };
+    }
   }
 
 
