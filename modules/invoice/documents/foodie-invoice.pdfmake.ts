@@ -21,7 +21,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
 
   private readonly styles: Record<string, Style> = {
     the_title: { fontSize:15, alignment: 'right', color: this.border_color},
-    inv_title: { fontSize: 15,marginTop:-6, bold: true, alignment: 'center', color:this.border_color},
+    inv_title: { fontSize: 15,marginTop:4, bold: true, alignment: 'center', color:this.border_color},
     tbl_title: { alignment: 'center', bold: true, color: '#e0e0e0',fontSize:7,marginLeft:4 },
     tbl_total: { bold: true, color: this.text_color }
   };
@@ -42,7 +42,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     const invoiceNo = { text: `លេខវិក្កយបត្រ / Invoice No : ${invoice_no}` };
     const invoiceDate = { text: `កាលបរិច្ជេទ / Date : ${getDate(date)}` };
     const merchantStack: Content[] = [merchant,header];
-    if (this.merchant_invoice_tin) merchantStack.push({ text: `លេខ អតសញ្ញាណកម្ម / VATTIN : ${this.merchant_invoice_tin}`, marginTop: 3 });
+    if (this.merchant_invoice_tin) merchantStack.push({ text: `លេខអតសញ្ញាណកម្ម / VATTIN : ${this.merchant_invoice_tin}`, marginTop: 3 });
     if (this.merchant_telephone) merchantStack.push({ text: `លេខទូរស័ព្ទ / Phone No : ${this.merchant_telephone}` });
 
     const content: Content = [
@@ -74,7 +74,7 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
       [{ text: 'អតិថិជន / Customer' }, { text: textToPdfmakeText(` : ${this.data.invoice?.customer?.fullname || '-'}`) }],
     );
     if (phone && phone !== '-') body.push([{ text: 'លេខទូរស័ព្ទ / Phone No' }, ` : ${phone}`]);
-    if (tin) body.push([{ text: 'លេខ អតសញ្ញាណកម្ម / VATTIN' ,noWrap:true}, ` : ${tin}`]);
+    if (tin) body.push([{ text: 'លេខអតសញ្ញាណកម្ម / VATTIN' ,noWrap:true}, ` : ${tin}`]);
     if (address) body.push([{ text: 'អាស័យដ្ឋាន / Address' }, ` : ${address.replaceAll('\n', ' ')}`]);
     const content: Content = [
       {
@@ -179,7 +179,6 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
     // const menuLen = renderedMenus.length;
     const menuLen = (menus || []).length;
     const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menuLen)).keys());
-
     const subTotalLine = subTotal_text ? menuLen + emptyRows.length + 1 + total_rows.indexOf(subTotal_text) : -1;
     return {
       stack: [
@@ -191,8 +190,8 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
             vLineWidth: () => 0,
             hLineWidth: (i) => {
               if (i <= 1) return 0;                      // no border on header
-              if (i <= menuLen + 1) return 1;       // dividers between items + below last item
-              if (i === subTotalLine) return 1; // above Balance Due / In Riel
+              if (i <= menuLen + 1) return 0.5;       // dividers between items + below last item
+              if (i === subTotalLine) return 0.5; // above Balance Due / In Riel
               return 0;
             },
             hLineColor: () => this.border_color,
@@ -363,13 +362,13 @@ export class FoodieInvoiceDocument extends BaseInvoiceDocument {
                     [
                       {
                         canvas: [
-                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 0.5 }
                         ]
                       },
                       '',
                       {
                         canvas: [
-                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 0.5 }
                         ]
                       }
                     ],
