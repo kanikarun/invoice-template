@@ -21,7 +21,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
   private readonly styles: Record<string, Style> = {
     the_title: { fontSize:15, alignment: 'right', color: this.border_color},
-    inv_title: { fontSize: 15,marginTop:-6, bold: true, alignment: 'center', color:this.border_color},
+    inv_title: { fontSize: 15,marginTop:-6, bold: true, alignment: 'center', color: this.border_color},
     tbl_title: { alignment: 'center', bold: true, color: '#e0e0e0',fontSize:7,marginLeft:4 },
     tbl_total: { bold: true, color: this.text_color }
   };
@@ -30,7 +30,6 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     color: this.text_color,
     fontSize: 6.5,
     font: 'Khmer',
-    // font:'Noto',
   };
 
   private header(): Content {
@@ -89,7 +88,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             },
             marginTop:-19,
             table: {
-              widths: ['auto', '*'], body
+              widths: ['auto', '*'],
+              body
             }
           }
         ]
@@ -136,11 +136,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
     const widths = [DEFAULT_HEIGHT, '*', 'auto', 50, 50, 50];
     const header_row: TableCell[] = [
-      {
-        stack: [
-          this.getRoundedEdge({ x: -8, y:-5 }, {color: this.border_color,w: 365, h: 20 }),
-        ],
-      },
+      { stack: [ this.getRoundedEdge({ x: -8, y:-5 }, {color: this.border_color,w: 365, h: 20 }),],},
       { style: 'tbl_title', text: 'Item & Description', alignment: 'left', marginLeft: -20 },
       { style: 'tbl_title', text: 'Qty' },
       { style: 'tbl_title', text: 'Unit Price' },
@@ -169,18 +165,17 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
       this.no_discount_price ? null : this.price_row({ title: discount_text, value: -(discount_price || 0) }),
       this.no_delivery_price ? null : this.price_row({ title: delivery_text, value: delivery_price }),
       this.no_tax_price ? null : this.price_row({ title: tax_text, value: tax_price }),
-      this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }),
-      subTotal_text,
-      this.no_exchange_rate ? null : this.price_row({ title: `In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
+      this.no_deposit_price ? null : this.price_row({ title: deposit_text, value: deposit_price || 0 }),subTotal_text,
+      this.no_exchange_rate
+      ? null
+      : this.price_row({ title: `In Riel (៛ ${this.currency_format(Number(exchange_rate), 'KHR')})`, value: sub_total_in_riel, currency: 'KHR', symbol: '៛' }),
       this.price_row({ is_empty: true })
     ].filter(x => x);
 
-    // const renderedMenus = [...(menus || []),...(menus || []),...(menus || []),...(menus || [])]; //test add menu or slice
-    // const menuLen = renderedMenus.length;
     const menuLen = (menus || []).length;
     const emptyRows = Array.from(Array(Math.max(0, this.BASE_EMPTY_ROWS - menuLen)).keys());
-
     const subTotalLine = subTotal_text ? menuLen + emptyRows.length + 1 + total_rows.indexOf(subTotal_text) : -1;
+
     return {
       stack: [
         {
@@ -190,13 +185,12 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             paddingBottom: (i) => (i <= menuLen ? 5 : 2),
             vLineWidth: () => 0,
             hLineWidth: (i) => {
-              if (i <= 1) return 0;                      // no border on header
-              if (i <= menuLen + 1) return 0.5;       // dividers between items + below last item
-              if (i === subTotalLine) return 0.5; // above Balance Due / In Riel
+              if (i <= 1) return 0; // no border on header
+              if (i <= menuLen + 1) return 0.5; // dividers between items + below last item
+              if (i === subTotalLine) return 0.5; // above Sub Total / Balance Due
               return 0;
             },
             hLineColor: () => this.border_color,
-            // fillColor: (i) => (i === 0 ? this.border_color : null),
           },
           table: {
             widths,
@@ -206,7 +200,6 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
               header_row,
 
            ...(menus || []).map((x) => {
-            // ...renderedMenus.map((x) => {
             const { menus_id, unit_price, qty, total_price, discount, discount_type, merchant_uom_id } =
               (x as InvoicesMenus) || {};
             const menu = menus_id as Menus;
@@ -258,7 +251,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     opt?: { marginTop?: number; symbol?: string; currency?: string }
   ): ContentColumns {
     value = value ?? 0; // Must force zero
-    const { currency, symbol, marginTop = 0} = opt || {};
+    const { currency, symbol, marginTop = 0 } = opt || {};
     const subtractSymbol = value < 0 ? '-' : '';
     return {
       alignment: 'right',
@@ -309,9 +302,9 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             body: [
               [
                 [
-                  { stack: htmlToPdfmakeText(this.data.invoice.note) },
-                  { stack: htmlToPdfmakeText(this.data.merchant.invoice_note) },
-                  { stack: htmlToPdfmakeText(this.data.merchant.payment_note) },
+                  { stack: htmlToPdfmakeText(this.data.invoice.note)},
+                  { stack: htmlToPdfmakeText(this.data.merchant.invoice_note)},
+                  { stack: htmlToPdfmakeText(this.data.merchant.payment_note)},
                   this.khqr_table()
                 ]
               ]
@@ -320,8 +313,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         }
       : { colSpan: 2, text: '' };
 
-    const text_cell: TableCell = is_empty ? { border, text: '' } : { border, style: 'tbl_total', text: title || ''};
-    const price_cell: TableCell = is_empty ? { border, text: '' } : { border, ...this.price_cell(value, { currency, symbol, marginTop: 2 })};
+    const text_cell: TableCell = is_empty ? { border, text: '' } : { style: 'tbl_total', text: title || '' };
+    const price_cell: TableCell = is_empty ? { border, text: '' } : [this.price_cell(value, { currency, symbol,marginTop:2 })];
 
     if (this.no_item_discount) {
       return [
@@ -345,7 +338,6 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
 
  private signature_table(): Content {
       if (!this.show_signature) return [];
-
       return {
         marginTop: -10,
         layout: 'noBorders',
@@ -395,9 +387,11 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
           ]
         }
       } as Content;
-    }  //SVG pattern
+    }
+
   async getDefinition(): Promise<TDocumentDefinitions> {
 
+    //SVG pattern
     let patternSvg = readFileSync(
       path.join(process.cwd(), 'public', 'foodie.svg'),
       'utf8'
@@ -433,6 +427,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
         return { [imageObj.id]: image };
       })
     );
+
     //Paper BG
     const PAPER_BG = readFileSync(
       path.join(process.cwd(), 'public', 'paper-bg.png')
@@ -441,15 +436,7 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
     return {
       content: contents,
       defaultStyle: this.defaultStyle,
-      images: {
-        LOGO,
-        KHQR,
-        SIGNATURE,
-        PAPER_BG: `data:image/png;base64,${PAPER_BG}`,
-        PATTERN: `data:image/svg;base64,${patternSvg}`,
-        ...Object.assign({}, ...images)
-      },
-
+      images: { LOGO, KHQR, SIGNATURE, PAPER_BG: `data:image/png;base64,${PAPER_BG}`, PATTERN: `data:image/svg;base64,${patternSvg}`, ...Object.assign({}, ...images) },
       background: () => ([
         { image: 'PAPER_BG', fit: [420, 595] },
         { svg: patternSvg, fit: [420, 595], opacity: 0, absolutePosition: { x: 0, y: 0 } }
