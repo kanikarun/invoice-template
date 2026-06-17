@@ -191,8 +191,8 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
             vLineWidth: () => 0,
             hLineWidth: (i) => {
               if (i <= 1) return 0;                      // no border on header
-              if (i <= menuLen + 1) return 1;       // dividers between items + below last item
-              if (i === subTotalLine) return 1; // above Balance Due / In Riel
+              if (i <= menuLen + 1) return 0.5;       // dividers between items + below last item
+              if (i === subTotalLine) return 0.5; // above Balance Due / In Riel
               return 0;
             },
             hLineColor: () => this.border_color,
@@ -363,13 +363,13 @@ export class FoodieIntlInvoiceDocument extends BaseInvoiceDocument {
                     [
                       {
                         canvas: [
-                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 0.5 }
                         ]
                       },
                       '',
                       {
                         canvas: [
-                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 1 }
+                          { type: 'line', lineColor: this.border_color, x1: 0, y1: 0, x2: 100, y2: 0, lineWidth: 0.5 }
                         ]
                       }
                     ],
