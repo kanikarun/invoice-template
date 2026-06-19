@@ -3,6 +3,7 @@ export * from './bold-stripe-intl-invoice.pdfmake';
 export * from './bold-stripe-invoice.pdfmake';
 export * from './bold-stripe-picture-intl-invoice.pdfmake';
 export * from './bold-stripe-picture-invoice.pdfmake';
+export * from './cosmetic-invoice-intl.pdfmake'
 export * from './default-invoice.pdfmake';
 export * from './foodie-intl-invoice.pdfmake';
 export * from './foodie-invoice.pdfmake'

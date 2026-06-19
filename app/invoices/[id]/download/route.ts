@@ -8,6 +8,7 @@ import {
   BoldStripeInvoiceDocument,
   BoldStripePictureIntlInvoiceDocument,
   BoldStripePictureInvoiceDocument,
+  CosmeticIntlInvoiceDocument,
   DefaultInvoiceDocument,
   FoodieIntlInvoiceDocument,
   FoodieInvoiceDocument,
@@ -40,7 +41,8 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
   const { invoice, merchant } = data;
   const palette = getColor(color || merchant.color);
-  const Document = getDocument('foodie-intl');
+  // const palette = getColor( '#9a63ff' );
+  const Document = getDocument('cosmetic-intl');
   const doc = await new Document({ invoice, merchant, palette, locale }).getDefinition();
   const buffer = await createPdf(doc);
 
@@ -91,6 +93,8 @@ function getDocument(type?: InvoiceType | null) {
       return FoodieIntlInvoiceDocument;
     case 'foodie':
       return FoodieInvoiceDocument;
+    case 'cosmetic-intl':
+      return CosmeticIntlInvoiceDocument;
     case 'default':
     default:
       return DefaultInvoiceDocument;

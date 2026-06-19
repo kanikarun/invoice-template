@@ -24,7 +24,8 @@ export type InvoiceType =
   | 'thermal-50-km'
   | 'khmer-tax'
   | 'foodie-intl'
-  | 'foodie';
+  | 'foodie'
+  | 'cosmetic-intl';
 
 export interface UseInvoiceProps extends BaseInvoiceDocumentData {
   authToken?: string;

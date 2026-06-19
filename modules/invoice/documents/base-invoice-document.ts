@@ -58,6 +58,10 @@ export class BaseInvoiceDocument {
     return this.data.palette?.colors?.[600] || 'black';
   }
 
+  protected get soft_color() {
+    return this.data.palette?.colors?.[400] || 'black';
+  }
+
   protected get dark_color() {
     return this.data.palette?.colors?.[700] || 'black';
   }
